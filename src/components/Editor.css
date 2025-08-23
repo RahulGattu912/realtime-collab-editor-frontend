@@ -1,0 +1,31 @@
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1e1e1e;
+}
+
+.editor-header {
+  padding: 10px;
+  background-color: #252526;
+  border-bottom: 1px solid #3c3c3c;
+}
+
+.language-select {
+  padding: 5px 10px;
+  background-color: #3c3c3c;
+  color: #fff;
+  border: 1px solid #3c3c3c;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.language-select:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+.editor-content {
+  flex: 1;
+  overflow: hidden;
+} 
