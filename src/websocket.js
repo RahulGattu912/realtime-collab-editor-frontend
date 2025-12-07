@@ -26,7 +26,7 @@ const stompClient = new Client({
   heartbeatOutgoing: 4000,
   onConnect: () => {
     console.log("Connected to WebSocket");
-    
+
     // Subscribe to general topics
     stompClient.subscribe("/topic/code", (message) => {
       console.log("Received code update:", message.body);
@@ -35,7 +35,7 @@ const stompClient = new Client({
         onMessageCallback(body);
       }
     });
-    
+
     stompClient.subscribe("/topic/cursor", (message) => {
       console.log("Received cursor update:", message.body);
       const body = JSON.parse(message.body);
@@ -53,7 +53,10 @@ const stompClient = new Client({
 
     // If there was a pending document subscription, handle it now
     if (pendingDocumentId) {
-      console.log("Processing pending document subscription:", pendingDocumentId);
+      console.log(
+        "Processing pending document subscription:",
+        pendingDocumentId
+      );
       subscribeToDocument(pendingDocumentId);
       pendingDocumentId = null;
     }
@@ -75,7 +78,7 @@ export function disconnect() {
   if (stompClient.connected) {
     console.log("Disconnecting from WebSocket...");
     // Unsubscribe from all topics
-    currentSubscriptions.forEach(subscription => {
+    currentSubscriptions.forEach((subscription) => {
       subscription.unsubscribe();
     });
     currentSubscriptions.clear();
@@ -90,7 +93,7 @@ export function sendCodeUpdate(content, sender, documentId, language) {
       sender,
       documentId,
       language,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     console.log("Sending code update:", message);
     stompClient.publish({
@@ -109,7 +112,7 @@ export function sendCursorUpdate(lineNumber, column, sender, documentId) {
       column: column,
       sender,
       documentId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
     console.log("Sending cursor update:", message);
     stompClient.publish({
@@ -124,24 +127,29 @@ export function sendCursorUpdate(lineNumber, column, sender, documentId) {
 export function subscribeToDocument(documentId) {
   if (stompClient.connected) {
     console.log("Subscribing to document:", documentId);
-    
+
     // Subscribe to document-specific topic
-    const subscription = stompClient.subscribe(`/topic/document/${documentId}`, (message) => {
-      console.log("Received document update:", message.body);
-      if (onMessageCallback) {
-        onMessageCallback(JSON.parse(message.body));
+    const subscription = stompClient.subscribe(
+      `/topic/document/${documentId}`,
+      (message) => {
+        console.log("Received document update:", message.body);
+        if (onMessageCallback) {
+          onMessageCallback(JSON.parse(message.body));
+        }
       }
-    });
-    
+    );
+
     currentSubscriptions.add(subscription);
-    
+
     // Request initial document content
     stompClient.publish({
       destination: `/app/document/${documentId}`,
-      body: JSON.stringify({ documentId })
+      body: JSON.stringify({ documentId }),
     });
   } else {
-    console.log("WebSocket not connected, storing document ID for later subscription");
+    console.log(
+      "WebSocket not connected, storing document ID for later subscription"
+    );
     pendingDocumentId = documentId;
   }
 }
