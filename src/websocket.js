@@ -21,7 +21,7 @@ export function setOnError(callback) {
 
 const stompClient = new Client({
   webSocketFactory: () =>
-    new SockJS("https://realtime-collab-editor-backend.onrender.com"),
+    new SockJS("https://realtime-collab-editor-backend.onrender.com/editor"),
   reconnectDelay: 5000,
   heartbeatIncoming: 4000,
   heartbeatOutgoing: 4000,
