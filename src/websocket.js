@@ -20,7 +20,8 @@ export function setOnError(callback) {
 }
 
 const stompClient = new Client({
-  webSocketFactory: () => new SockJS("http://localhost:8080/editor"),
+  webSocketFactory: () =>
+    new SockJS("https://realtime-collab-editor-backend.onrender.com"),
   reconnectDelay: 5000,
   heartbeatIncoming: 4000,
   heartbeatOutgoing: 4000,
@@ -128,28 +129,57 @@ export function subscribeToDocument(documentId) {
   if (stompClient.connected) {
     console.log("Subscribing to document:", documentId);
 
-    // Subscribe to document-specific topic
     const subscription = stompClient.subscribe(
-      `/topic/document/${documentId}`,
+      `/app/document/${documentId}`, // IMPORTANT: Not /topic
       (message) => {
-        console.log("Received document update:", message.body);
+        console.log("Initial document snapshot:", message.body);
         if (onMessageCallback) {
           onMessageCallback(JSON.parse(message.body));
         }
+
+        // After initial snapshot, subscribe to live updates
+        stompClient.subscribe(`/topic/document/${documentId}`, (updateMsg) => {
+          console.log("Realtime update:", updateMsg.body);
+          if (onMessageCallback) {
+            onMessageCallback(JSON.parse(updateMsg.body));
+          }
+        });
       }
     );
 
     currentSubscriptions.add(subscription);
-
-    // Request initial document content
-    stompClient.publish({
-      destination: `/app/document/${documentId}`,
-      body: JSON.stringify({ documentId }),
-    });
   } else {
-    console.log(
-      "WebSocket not connected, storing document ID for later subscription"
-    );
+    console.log("WS not connected, storing docID for later");
     pendingDocumentId = documentId;
   }
 }
+
+// export function subscribeToDocument(documentId) {
+//   if (stompClient.connected) {
+//     console.log("Subscribing to document:", documentId);
+
+//     // Subscribe to document-specific topic
+//     const subscription = stompClient.subscribe(
+//       `/topic/document/${documentId}`,
+//       (message) => {
+//         console.log("Received document update:", message.body);
+//         if (onMessageCallback) {
+//           onMessageCallback(JSON.parse(message.body));
+//         }
+//       }
+//     );
+
+//     currentSubscriptions.add(subscription);
+
+//     // Request initial document content
+//     stompClient.publish({
+//       destination: `/app/document/${documentId}`,
+//       body: JSON.stringify({ documentId }),
+//     });
+//   } else {
+//     console.log(
+//       "WebSocket not connected, storing document ID for later subscription"
+//     );
+//     pendingDocumentId = documentId;
+//   }
+// }
